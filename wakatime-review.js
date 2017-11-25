@@ -3,11 +3,9 @@ function trackTime(keyValue) {
   const branch = readBranch();
   const entity = "bitbucket.org";
   let havenOnlyScrolledInCurrentInterval = false;
-  console.log(`key: ${keyValue.key}`);
 
   function scrollHandler() {
     havenOnlyScrolledInCurrentInterval = true;
-    console.log("scrolling");
   }
 
   window.setInterval(function() {
@@ -50,7 +48,6 @@ function trackTime(keyValue) {
     xhr.open("POST", `https://wakatime.com/api/v1/users/current/heartbeats?api_key\=${keyValue}`);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(payload));
-    console.log("heartbeat sent");
   };
 
   function clickHandler() {
@@ -59,19 +56,12 @@ function trackTime(keyValue) {
     havenOnlyScrolledInCurrentInterval = false;
   }
 
-  console.log(`Branch: ${branch}`);
-  console.log(`Owner: ${owner}`);
-  console.log(`Project: ${project}`);
-  console.log(`Time of reload ${(new Date).getTime()/1000}`);
-  let payload = preparePayload("bitbucket.org", "domain", project, branch);
-  console.log(payload);
-  sendHeartbeat(payload);
   window.onscroll = scrollHandler;
   document.onclick = clickHandler;
 };
 
 function keyNotProvided(error) {
-  console.log(error);
+  console.log("You should first configure this plugin by providing wakatime key");
 }
 
 let key = browser.storage.local.get("key");
