@@ -5,7 +5,7 @@
   "description": "Measure time spent on review and sends it to wakatime",
 
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "icons/pull_request-48.png"
   },
 
   "permissions": [
