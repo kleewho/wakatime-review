@@ -23,6 +23,12 @@
       "matches": ["*://bitbucket.org/*/pull-requests/*"],
       "js": ["wakatime-review.js"]
     }
-  ]
+  ],
+
+  "applications": {
+    "gecko": {
+      "id": "wakatime_review@github.com"
+    }
+  }
 
 }
