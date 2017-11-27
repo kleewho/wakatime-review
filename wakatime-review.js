@@ -45,7 +45,7 @@ function trackTime(keyValue) {
 
   function sendHeartbeat(payload) {
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://wakatime.com/api/v1/users/current/heartbeats?api_key\=${keyValue}`);
+    xhr.open("POST", `https://wakatime.com/api/v1/users/current/heartbeats?api_key\=${keyValue.key}`);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(payload));
   };
