@@ -1,54 +1,62 @@
+
 const bitbucket = {
     readBranch: () => document.querySelector("#id_source_group .branch a").textContent,
-    readDomainOwnerAndProject: (url) => {
+    readDomainOwnerAndProject: () => {
+        const url = window.location.href;
         const regexp = /http[s]?:\/\/([a-zA-Z0-9]*\.[a-z]*)\/(\w*)\/([\w-]*).*/g;
         const matched = regexp.exec(url);
         const domain = matched[1];
         const owner = matched[2];
         const project = matched[3];
-        return {owner: owner,
-                project: project};
-    }
-};
-
-const stash = {
-    readBranch: () => {
-        console.log('stash readBranch');
-    },
-    readDomainOwnerAndProject: (url) => {
-        console.log('stash readDomainOwnerAndProject');
         return {
-            owner: 'stash',
-            project: 'project'
+            domain: domain,
+            owner: owner,
+            project: project
         };
     }
 };
 
-const funcFactory = (url) => {
-    let siteParser;
 
-    const parsedUrl = new URL(url);
+const stash = {
+    readBranch: () => document.querySelector('div.pull-request-branches').textContent,
+    readDomainOwnerAndProject: () => {
+
+        let grabAfter = (array, after) => {
+            return array[array.lastIndexOf(after) + 1];
+        };
+
+        const url = new URL(window.location.href);
+        // example of URL to parse
+        // https://stash.clearcode.cc/projects/CCADS/repos/backend/pull-requests/137/commits
+        const splitUrl = url.pathname.split('/');
+        return {
+            domain: url.host,
+            owner: grabAfter(splitUrl, 'projects'),
+            project: grabAfter(splitUrl, 'repos')
+        };
+    }
+};
+
+const funcFactory = () => {
+    let siteParser;
+    const parsedUrl = new URL(window.location.href);
+
     if (parsedUrl.host.includes('stash')) {
         siteParser = stash;
     } else if (parsedUrl.host.includes('bitbucket')) {
         siteParser = bitbucket;
     }
 
-    return siteParser.readDomainOwnerAndProject, siteParser.readBranch;
+    return {
+        readDomainOwnerAndProject: siteParser.readDomainOwnerAndProject,
+        readBranch: siteParser.readBranch
+    };
 };
 
 function trackTime(keyPromise) {
-    // TODO: read branch
-    // TODO: readDomainOwnerAndProject
-    // TODO: preparePayload accept editor
-
-    const url = window.location.href;
-    console.log(url);
-    const {readDomainOwnerAndProject, readBranch} = funcFactory(url);
-
-  const {domain, owner, project} = readDomainOwnerAndProject(url);
+  const {readDomainOwnerAndProject, readBranch} = funcFactory();
+  const {entity, owner, project} = readDomainOwnerAndProject();
   const branch = readBranch();
-  const entity = "bitbucket.org";  // TODO
   let havenOnlyScrolledInCurrentInterval = false;
 
   function scrollHandler() {
@@ -62,30 +70,15 @@ function trackTime(keyPromise) {
     }
   }, 30000);
 
-  // function readDomainOwnerAndProject() {
-  //   const url = window.location.href;
-  //   const regexp = /http[s]?:\/\/([a-zA-Z0-9]*\.[a-z]*)\/(\w*)\/([\w-]*).*/g;
-  //   const matched = regexp.exec(url);
-  //   const domain = matched[1];
-  //   const owner = matched[2];
-  //   const project = matched[3];
-  //   return {owner: owner,
-  //           project: project};
-  // }
-
-  // function readBranch() {
-  //   return document.querySelector("#id_source_group .branch a").textContent;
-  // }
-
   function preparePayload(entity, type, project, branch, is_write) {
     return {
       entity: entity,
       type: type,
-      time: (new Date).getTime()/1000,
+      time: new Date().getTime()/1000,
       project: project,
       branch: branch,
       is_write: is_write,
-      editor: "bitbucket.org"
+      editor: entity
     };
   }
 

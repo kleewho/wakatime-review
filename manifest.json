@@ -20,7 +20,7 @@
 
   "content_scripts": [
     {
-      "matches": ["*://*/pull-requests/*"],
+      "matches": ["<all_urls>"],
       "js": ["wakatime-review.js"]
     }
   ],
