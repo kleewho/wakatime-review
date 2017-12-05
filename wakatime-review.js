@@ -14,7 +14,10 @@ const bitbucket = {
         };
     },
     // site support function
-    siteMatch: (url) => {}
+    siteMatch: (url) => {
+        const parsedUrl = new URL(url);
+        return parsedUrl.host == 'bitbucket.org';
+    }
 };
 
 
@@ -36,7 +39,10 @@ const stash = {
             project: grabAfter(splitUrl, 'repos')
         };
     },
-    siteMatch: (url) => {}
+    siteMatch: (url) => {
+        const parsedUrl = new URL(url);
+        return parsedUrl.host.includes('stash');
+    }
 };
 
 
@@ -121,7 +127,7 @@ function keyNotProvided(error) {
 
 
 const isSiteSupported = (url) => {
-    return supportedSites.some(el => {
+    return supportedSites.some((el, index, array) => {
         el.siteMatch(url);
     });
 };
