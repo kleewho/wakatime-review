@@ -1,4 +1,3 @@
-
 const bitbucket = {
     readBranch: () => document.querySelector("#id_source_group .branch a").textContent,
     readDomainOwnerAndProject: () => {
@@ -13,7 +12,9 @@ const bitbucket = {
             owner: owner,
             project: project
         };
-    }
+    },
+    // site support function
+    siteMatch: (url) => {}
 };
 
 
@@ -34,8 +35,13 @@ const stash = {
             owner: grabAfter(splitUrl, 'projects'),
             project: grabAfter(splitUrl, 'repos')
         };
-    }
+    },
+    siteMatch: (url) => {}
 };
+
+
+const supportedSites = [bitbucket, stash];
+
 
 const funcFactory = () => {
     let siteParser;
@@ -48,61 +54,80 @@ const funcFactory = () => {
     }
 
     return {
+        foundMatch: foundMatch,
         readDomainOwnerAndProject: siteParser.readDomainOwnerAndProject,
         readBranch: siteParser.readBranch
     };
 };
 
+
 function trackTime(keyPromise) {
-  const {readDomainOwnerAndProject, readBranch} = funcFactory();
-  const {entity, owner, project} = readDomainOwnerAndProject();
-  const branch = readBranch();
-  let havenOnlyScrolledInCurrentInterval = false;
+    const {
+        readDomainOwnerAndProject,
+        readBranch
+    } = funcFactory();
+    const {
+        entity,
+        owner,
+        project
+    } = readDomainOwnerAndProject();
+    const branch = readBranch();
+    let havenOnlyScrolledInCurrentInterval = false;
 
-  function scrollHandler() {
-    havenOnlyScrolledInCurrentInterval = true;
-  }
-
-  window.setInterval(function() {
-    if (havenOnlyScrolledInCurrentInterval) {
-      sendHeartbeat(preparePayload(entity, "app", project, branch, false));
-      havenOnlyScrolledInCurrentInterval = false;
+    function scrollHandler() {
+        havenOnlyScrolledInCurrentInterval = true;
     }
-  }, 30000);
 
-  function preparePayload(entity, type, project, branch, is_write) {
-    return {
-      entity: entity,
-      type: type,
-      time: new Date().getTime()/1000,
-      project: project,
-      branch: branch,
-      is_write: is_write,
-      editor: entity
-    };
-  }
+    window.setInterval(function() {
+        if (havenOnlyScrolledInCurrentInterval) {
+            sendHeartbeat(preparePayload(entity, "app", project, branch, false));
+            havenOnlyScrolledInCurrentInterval = false;
+        }
+    }, 30000);
 
+    function preparePayload(entity, type, project, branch, is_write) {
+        return {
+            entity: entity,
+            type: type,
+            time: new Date().getTime() / 1000,
+            project: project,
+            branch: branch,
+            is_write: is_write,
+            editor: entity
+        };
+    }
 
-  function sendHeartbeat(payload) {
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://wakatime.com/api/v1/users/current/heartbeats?api_key\=${keyPromise.key}`);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify(payload));
-  };
+    function sendHeartbeat(payload) {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://wakatime.com/api/v1/users/current/heartbeats?api_key\=${keyPromise.key}`);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify(payload));
+    }
 
-  function clickHandler() {
-    let payload = preparePayload(entity, "app", project, branch, true);
-    sendHeartbeat(payload);
-    havenOnlyScrolledInCurrentInterval = false;
-  }
+    function clickHandler() {
+        let payload = preparePayload(entity, "app", project, branch, true);
+        sendHeartbeat(payload);
+        havenOnlyScrolledInCurrentInterval = false;
+    }
 
-  window.onscroll = scrollHandler;
-  document.onclick = clickHandler;
-};
-
-function keyNotProvided(error) {
-  console.log("You should first configure this plugin by providing wakatime key");
+    window.onscroll = scrollHandler;
+    document.onclick = clickHandler;
 }
 
-let key = browser.storage.local.get("key");
-key.then(trackTime, keyNotProvided);
+
+function keyNotProvided(error) {
+    console.log("You should first configure this plugin by providing wakatime key");
+}
+
+
+const isSiteSupported = (url) => {
+    return supportedSites.some(el => {
+        el.siteMatch(url);
+    });
+};
+
+
+if (isSiteSupported(window.location.href)) {
+    let key = browser.storage.local.get("key");
+    key.then(trackTime, keyNotProvided);
+}
