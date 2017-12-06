@@ -68,6 +68,11 @@ const funcFactory = () => {
 
 
 function trackTime(keyPromise) {
+
+    if (isSiteSupported(window.location.href)) {
+        return;
+    }
+
     const {
         readDomainOwnerAndProject,
         readBranch
@@ -128,12 +133,13 @@ function keyNotProvided(error) {
 
 const isSiteSupported = (url) => {
     return supportedSites.some((el, index, array) => {
-        el.siteMatch(url);
+        if (el.siteMatch(url)) {
+            return true;
+        }
+        return false;
     });
 };
 
 
-if (isSiteSupported(window.location.href)) {
-    let key = browser.storage.local.get("key");
-    key.then(trackTime, keyNotProvided);
-}
+let key = browser.storage.local.get("key");
+key.then(trackTime, keyNotProvided);
