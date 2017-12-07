@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "wakatime-review",
   "version": "1.0",
-  "description": "Measure time spent on review and sends it to wakatime",
+  "description": "Measures time spent on review and sends it to wakatime",
 
   "icons": {
     "48": "icons/pull_request-48.png"
@@ -20,7 +20,7 @@
 
   "content_scripts": [
     {
-      "matches": ["*://bitbucket.org/*/pull-requests/*"],
+      "matches": ["<all_urls>"],
       "js": ["wakatime-review.js"]
     }
   ],
